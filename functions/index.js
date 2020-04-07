@@ -60,12 +60,13 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
       .set({
         email: data.email,
         emailVerified: false,
-        photoURL: '',
-        displayName: '',
+        photoURL: null,
+        displayName: null,
         disabled: false,
         userType: 'student',
         isNewUser: true,
-        uid: userRecord.uid
+        uid: userRecord.uid,
+        teacherUid: data.uid
       });
       // create the student collection and document
   }).then(function(){
