@@ -9,6 +9,8 @@ const firestore = new Firestore({
 
 admin.initializeApp();
 
+const db = admin.firestore();
+
 exports.addAdminRole = functions.https.onCall((data, context) => {
     return firestore.collection('users')
     .doc(data.uid)
@@ -43,7 +45,8 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
       throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
   
-  admin.auth().createUser({
+  returnRecord = null;
+  return admin.auth().createUser({
       email: data.email,
       emailVerified: false,
       password: data.password,
@@ -51,8 +54,23 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
       disabled: false
   }).then(function(userRecord){
       console.log(userRecord);
+      returnRecord = userRecord;
+      // create the user collection and document
+      return db.collection('users').doc(userRecord.uid)
+      .set({
+        email: data.email,
+        emailVerified: false,
+        photoURL: '',
+        displayName: '',
+        disabled: false,
+        userType: 'student',
+        isNewUser: true,
+        uid: userRecord.uid
+      });
+      // create the student collection and document
+  }).then(function(){
       return {
-          user: userRecord
+        user: returnRecord
       }
   }).catch(function(error){
       console.log(error);
@@ -62,3 +80,12 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
       // throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   });
 });
+
+// exports.addTeacherDocuments = functions.https.onCall((data, context) => {
+//   if (context.auth.token.admin !== true){
+//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+//   }
+//   if (context.auth.uid != data.uid){
+//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+//   }
+// });
