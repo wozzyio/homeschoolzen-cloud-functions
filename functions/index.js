@@ -92,11 +92,10 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
   return db.collection('teachers').doc(data.uid).set({
     uid: data.uid,
     displayName: data.displayName,
-    photoUrl: data.photoURL,
+    photoUrl: data.photoUrl,
     email: data.email,
     emailVerified: data.emailVerified,
     isNewUser: data.isNewUser,
-    userType: "teacher",
     teacherStudents: data.teacherStudents,
     teacherName: data.teacherName,
     homeschoolName: data.homeschoolName,
@@ -110,6 +109,7 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
   });
 });
 
+/* onCreation of user with the userType of student */
 exports.createUser = functions.firestore.document('users/{userId}').onCreate((snap, context) => {
     const newValue = snap.data();
     if (newValue.userType == "student") {
@@ -123,4 +123,32 @@ exports.createUser = functions.firestore.document('users/{userId}').onCreate((sn
         console.log(err);
       });
     }
+});
+
+/* onUpdate of teachers we want to update the teacher user document as well */
+exports.onUpdateTeacherUser = functions.firestore.document('teachers/{teacherId}').onUpdate((snap, context) => {
+    const newValue = snap.data();
+    return db.collection('users').doc(newValue.uid).set({ newValue })
+    .then((userRecord) => {
+      console.log(userRecord);
+      return {
+        user: userRecord
+      }
+    }).catch(err => {
+      console.log(err);
+    });
+});
+
+/* onCreate of teachers we want to update the teacher user document as well */
+exports.onCreateTeacherUser = functions.firestore.document('teachers/{teacherId}').onCreate((snap, context) => {
+    const newValue = snap.data();
+    return db.collection('users').doc(newValue.uid).set({ newValue })
+    .then((userRecord) => {
+      console.log(userRecord);
+      return {
+        user: userRecord
+      }
+    }).catch(err => {
+      console.log(err);
+    });
 });
