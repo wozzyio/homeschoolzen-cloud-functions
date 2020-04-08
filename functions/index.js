@@ -82,14 +82,33 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
   });
 });
 
-// exports.addTeacherDocuments = functions.https.onCall((data, context) => {
-//   if (context.auth.token.admin !== true){
-//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
-//   }
-//   if (context.auth.uid != data.uid){
-//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
-//   }
-// });
+exports.addTeacherDocuments = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  return db.collection('teachers').doc(data.uid).set({
+    uid: data.uid,
+    displayName: data.displayName,
+    photoUrl: data.photoURL,
+    email: data.email,
+    emailVerified: data.emailVerified,
+    isNewUser: data.isNewUser,
+    userType: "teacher",
+    teacherStudents: data.teacherStudents,
+    teacherName: data.teacherName,
+    homeschoolName: data.homeschoolName,
+  }).then((userRecord) => {
+    console.log(userRecord);
+    return {
+        message: `Sucessfully created teacher document with uid of ${userRecord.uid}`
+    }
+  }).catch(err => {
+    console.log(err);
+  });
+});
 
 exports.createUser = functions.firestore.document('users/{userId}').onCreate((snap, context) => {
     const newValue = snap.data();
