@@ -103,7 +103,7 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
   }).then(function(teacherRecord){
     console.log(teacherRecord);
     returnRecord = teacherRecord;
-    return db.collection('users').doc(teacherRecord.uid)
+    return db.collection('users').doc(data.uid)
     .set({
         uid: data.uid,
         displayName: data.displayName,
