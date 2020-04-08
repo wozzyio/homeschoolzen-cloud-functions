@@ -98,11 +98,11 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
     isNewUser: data.isNewUser,
     teacherStudents: data.teacherStudents,
     teacherName: data.teacherName,
-    homeschoolName: data.homeschoolName,
-  }).then((userRecord) => {
-    console.log(userRecord);
+    homeschoolName: data.homeschoolName
+  }).then((teacherRecord) => {
+    console.log(teacherRecord);
     return {
-        message: `Sucessfully created teacher document with uid of ${userRecord.uid}`
+        message: `Sucessfully created teacher document with uid of ${teacherRecord.uid}`
     }
   }).catch(err => {
     console.log(err);
