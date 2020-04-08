@@ -85,9 +85,9 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
-  if (context.auth.uid != data.uid){
-    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
-  }
+//   if (context.auth.uid != data.uid){
+//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+//   }
   returnRecord = null;
   return db.collection('teachers').doc(data.uid).set({
     uid: data.uid,
