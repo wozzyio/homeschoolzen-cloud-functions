@@ -101,8 +101,10 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
     homeSchoolName: data.homeSchoolName,
     userType: "teacher"
   }).then(function(teacherRecord){
-    returnRecord = teacherRecord
-    return db.collection('users').doc(teacherRecord.uid).set({
+    console.log(teacherRecord);
+    returnRecord = teacherRecord;
+    return db.collection('users').doc(teacherRecord.uid)
+    .set({
         uid: data.uid,
         displayName: data.displayName,
         photoUrl: data.photoUrl,
@@ -113,7 +115,7 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
         teacherName: data.teacherName,
         homeSchoolName: data.homeSchoolName,
         userType: "teacher"
-    })
+    });
   }).then(function(){
     return {
         message: `Created a teacher record and updated users record sucessfully with ${returnRecord.uid}`
