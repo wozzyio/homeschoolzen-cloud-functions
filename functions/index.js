@@ -91,14 +91,15 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
 //   }
 // });
 
-// implement onEvent listener for changes on firestore user and if the userType is student than
-// add the student doc
-exports.createUser = functions.firestore.document('users/').onCreate((snap, context) => {
+exports.createUser = functions.firestore.document('users/{userId}').onCreate((snap, context) => {
     const newValue = snap.data();
     if (newValue.userType == "student") {
       return db.collection('students').doc(newValue.uid).set({ newValue })
       .then((userRecord) => {
         console.log(userRecord);
+        return {
+          user: userRecord
+        }
       }).catch(err => {
         console.log(err);
       });
