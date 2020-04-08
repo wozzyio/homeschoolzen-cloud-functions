@@ -98,7 +98,7 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
     isNewUser: data.isNewUser,
     teacherStudents: data.teacherStudents,
     teacherName: data.teacherName,
-    homeschoolName: data.homeschoolName
+    homeSchoolName: data.homeSchoolName
   }).then((teacherRecord) => {
     console.log(teacherRecord);
     return {
