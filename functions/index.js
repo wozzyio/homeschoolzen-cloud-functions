@@ -89,6 +89,7 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
   if (context.auth.uid != data.uid){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
+  returnRecord = null;
   return db.collection('teachers').doc(data.uid).set({
     uid: data.uid,
     displayName: data.displayName,
@@ -99,13 +100,18 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
     teacherStudents: data.teacherStudents,
     teacherName: data.teacherName,
     homeSchoolName: data.homeSchoolName
-  }).then((teacherRecord) => {
-    console.log(teacherRecord);
+  }).then(function(teacherRecord){
+    returnRecord = teacherRecord
+    return db.collection('users').doc(teacherRecord.uid).set({ teacherRecord })
+  }).then(function(){
     return {
-        message: `Sucessfully created teacher document with uid of ${teacherRecord.uid}`
+        message: `Created a teacher record and updated users record sucessfully with ${returnRecord.uid}`
     }
-  }).catch(err => {
+  }).catch(function(err){
     console.log(err);
+    return {
+        err: err
+    }
   });
 });
 
@@ -140,15 +146,15 @@ exports.onUpdateTeacherUser = functions.firestore.document('teachers/{teacherId}
 });
 
 /* onCreate of teachers we want to update the teacher user document as well */
-exports.onCreateTeacherUser = functions.firestore.document('teachers/{teacherId}').onCreate((snap, context) => {
-    const newValue = snap.data();
-    return db.collection('users').doc(newValue.uid).set({ newValue })
-    .then((userRecord) => {
-      console.log(userRecord);
-      return {
-        user: userRecord
-      }
-    }).catch(err => {
-      console.log(err);
-    });
-});
+// exports.onCreateTeacherUser = functions.firestore.document('teachers/{teacherId}').onCreate((snap, context) => {
+//     const newValue = snap.data();
+//     return db.collection('users').doc(newValue.uid).set({ newValue })
+//     .then((userRecord) => {
+//       console.log(userRecord);
+//       return {
+//         user: userRecord
+//       }
+//     }).catch(err => {
+//       console.log(err);
+//     });
+// });
