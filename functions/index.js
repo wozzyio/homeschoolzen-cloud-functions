@@ -50,7 +50,7 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
       email: data.email,
       emailVerified: false,
       password: data.password,
-      displayName: '',
+      displayName: data.displayName,
       disabled: false
   }).then(function(userRecord){
       console.log(userRecord);
@@ -61,7 +61,7 @@ exports.addUserAsAdmin = functions.https.onCall((data, context) => {
         email: data.email,
         emailVerified: false,
         photoURL: null,
-        displayName: null,
+        displayName: data.displayName,
         userType: 'student',
         isNewUser: true,
         uid: userRecord.uid,
