@@ -175,6 +175,57 @@ exports.onUpdateTeacherUser = functions.firestore.document('teachers/{teacherId}
     });
 });
 
+exports.notAttendingStudent = functions.https.onCall((data, context) => {
+    // need data.reason, data.uid, data.studentUids, data.datesString
+    // datesString: => 2020-04-29,2020-04-30
+    var listDate = [];
+    var startDate = data.datesString.split(",")[0];
+    var endDate = data.datesString.split(",")[1];
+    var dateMove = new Date(startDate);
+    var strDate = startDate;
+
+    while (strDate < endDate){
+        var strDate = dateMove.toISOString().slice(0,10);
+        listDate.push(strDate);
+        dateMove.setDate(dateMove.getDate()+1);
+    };
+    if(data.studentUids.length > 1) {
+        data.studentUids.forEach((studentUid) => {
+            listDate.forEach((date) => {
+                return db.collection('attendance').doc(studentUid).collection(date).doc(studentUid).set({
+                    teacherUid: data.uid,
+                    isPresent: false,
+                    reason: data.reason,
+                    studentUid: studentUid,
+                }).then((attendanceRecord) => {
+                    console.log(attendanceRecord);
+                }).catch(err => {
+                    console.log(err);
+                });
+            });
+        });
+        return {
+            success: `attendance recorded successfully`
+        }
+    } else {
+        listDate.forEach((date) => {
+            return db.collection('attendance').doc(data.studentUids[0]).collection(date).doc(data.studentUids[0]).set({
+                teacherUid: data.uid,
+                isPresent: false,
+                reason: data.reason,
+                studentUid: data.studentUids[0],
+            }).then((attendanceRecord) => {
+                console.log(attendanceRecord);
+            }).catch(err => {
+                console.log(err);
+            });
+        });
+        return {
+            success: `attendance recorded successfully`
+        }
+    }
+});
+
 /* onCreate of teachers we want to update the teacher user document as well */
 // exports.onCreateTeacherUser = functions.firestore.document('teachers/{teacherId}').onCreate((snap, context) => {
 //     const newValue = snap.data();
