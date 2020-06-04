@@ -128,6 +128,29 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
   });
 });
 
+exports.getStudentDocumentAsTeacher = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  db.collection('students').get(data.studentUid).then(doc => {
+    if (!(doc && doc.exists)) {
+      return { 
+          error: 'Unable to find the document' 
+      }
+    }
+    const docRef = doc.data();
+    return {
+      data: docRef
+    }
+  }).catch(err => {
+    console.log(err);
+    throw new functions.https.HttpsError("internal", "Request caused a server error");
+  });
+});
+
 /* onCreation of user with the userType of student */
 exports.createUser = functions.firestore.document('users/{userId}').onCreate((snap, context) => {
     const newValue = snap.data();
