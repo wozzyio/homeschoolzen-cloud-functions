@@ -141,9 +141,11 @@ exports.getStudentDocumentAsTeacher = functions.https.onCall((data, context) => 
           error: 'Unable to find the document' 
       }
     }
+    console.log("Document requested: " + doc);
+    console.log("Document requested .data(): " + doc.data());
     const docRef = doc.data();
     return {
-      data: docRef
+      data: doc
     }
   }).catch(err => {
     console.log(err);
