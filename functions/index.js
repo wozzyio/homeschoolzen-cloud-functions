@@ -145,7 +145,7 @@ exports.getStudentDocumentAsTeacher = functions.https.onCall((data, context) => 
     console.log("Document requested .data(): " + doc.data());
     const docRef = doc.data();
     return {
-      data: doc
+      data: docRef
     }
   }).catch(err => {
     console.log(err);
