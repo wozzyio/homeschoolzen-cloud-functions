@@ -135,7 +135,7 @@ exports.getStudentDocumentAsTeacher = functions.https.onCall((data, context) => 
   if (context.auth.uid != data.uid){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
-  db.collection('students').doc(data.studentUid).get().then(doc => {
+  return db.collection('students').doc(data.studentUid).get().then(doc => {
     if (!(doc && doc.exists)) {
       return { 
           error: 'Unable to find the document' 
