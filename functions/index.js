@@ -12,7 +12,7 @@ admin.initializeApp();
 const db = admin.firestore();
 const bucket = admin.storage().bucket();
 
-
+// TODO: udpate the eventual consitency when udating the student by updating the rest of the fields that require the update
 // updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
 exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
@@ -101,9 +101,9 @@ exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context)
     return db.collection('students').doc(data.studentUid).update({
       displayName: data.displayName,
       currentGradeLevel: data.currentGradeLevel,
-    }).then((studentRecord) => {
+    }).then((result) => {
       return {
-        message: `sucessfully updated students name and grade for ${studentRecord.uid}`
+        message: `sucessfully updated students name and grade for ${data.uid}`
       }
     }).catch((err) => {
       console.log(err);
@@ -112,9 +112,9 @@ exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context)
   } else if(data.requireStudentNameUpdate) {
     return db.collection('students').doc(data.studentUid).update({
       displayName: data.displayName,
-    }).then((studentRecord) => {
+    }).then((result) => {
       return {
-        message: `sucessfully updated students name for ${studentRecord.uid}`
+        message: `sucessfully updated students name for ${data.uid}`
       }
     }).catch((err) => {
       console.log(err);
@@ -123,9 +123,9 @@ exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context)
   } else if(data.requireStudentGradeUpdate) {
     return db.collection('students').doc(data.studentUid).update({
       currentGradeLevel: data.currentGradeLevel,
-    }).then((studentRecord) => {
+    }).then((result) => {
       return {
-        message: `sucessfully updated students grade for ${studentRecord.uid}`
+        message: `sucessfully updated students grade for ${data.uid}`
       }
     }).catch((err) => {
       console.log(err);
