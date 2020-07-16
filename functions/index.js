@@ -24,8 +24,8 @@ exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, cont
 
   if(data.requireStudentEmailUpdate && data.requireStudentPasswordUpdate) {
     return admin.auth().updateUser(data.studentUid, {
-      email: data.studentEmail,
-      password: data.studentPassword,
+      email: data.email,
+      password: data.password,
     }).then((userRecord) => {
       return {
         message: `sucessfully updated ${userRecord.uid}`,
@@ -37,7 +37,7 @@ exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, cont
     });
   } else if(data.requireStudentEmailUpdate) {
     return admin.auth().updateUser(data.studentUid, {
-      email: data.studentEmail,
+      email: data.email,
     }).then((userRecord) => {
       return {
         message: `sucessfully updated email for ${userRecord.uid}`,
@@ -49,7 +49,7 @@ exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, cont
     });
   } else if(data.requireStudentPasswordUpdate) {
     return admin.auth().updateUser(data.studentUid, {
-      password: data.studentPassword,
+      password: data.password,
     }).then((userRecord) => {
       return {
         message: `sucessfully updated ${userRecord.uid}`,
@@ -86,54 +86,53 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
     console.log(`Unable to upload image ${err}`)
     throw new functions.https.HttpsError("internal", "Request caused a server error");
   });
-  // const uploadTask = bucket.ref(`images/${image.name}`).put(image);
-  // bucket("gs://homeschool-nonprod.appspot.com").upload(`images/${image.name}`,{
-
-  // }
-  // uploadTask.on(
-  //     error => {
-  //         // Error function ...
-  //         console.log(error);
-  //     },
-  //     () => {
-  //         // complete function ...
-  //         storage
-  //         .ref("images")
-  //         .child(image.name)
-  //         .getDownloadURL()
-  //         .then(url => {
-  //             this.setState({
-  //                 teacherProfileFile: url
-  //             });
-  //             // this.setState((prevState) => ({
-  //             //     teacherStudent: [...prevState.teacherDataCollection.photoUrl: url]
-  //             // }));
-  //         });
-  //     }
-  // );
 });
-/* updateStudentAsTeacher => as a teacher be able to update student information */
-// exports.updateStudentAsTeacher = functions.https.onCall((data, context) => {
-//   if (context.auth.token.admin !== true){
-//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
-//   }
-//   if (context.auth.uid != data.uid){
-//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
-//   }
 
-//   // keep a list of everything thats being changed if null don't add it to that list of allChanging
-//   // go through the list updating one at a time
-//   // let allChanging = [];
-//   // let ds = {};
-//   // ds.displayName = "lladsjflj";
-//   // check if the date being send contains new password, email or photoURL
-//   if(data.photoURL) {
-    
-//   }
-//   return db.collection('students').doc(data.studentUid).update({
-//     displayName: data.displayName,
-//   }).then()
-// });
+/* updateStudentNameGradeAsTeacher => as a teacher be able to update student Name and Grade information */
+exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+
+  if(data.requireStudentNameUpdate && data.requireStudentGradeUpdate) {
+    return db.collection('students').doc(data.studentUid).update({
+      displayName: data.displayName,
+      currentGradeLevel: data.currentGradeLevel,
+    }).then((studentRecord) => {
+      return {
+        message: `sucessfully updated students name and grade for ${studentRecord.uid}`
+      }
+    }).catch((err) => {
+      console.log(err);
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  } else if(data.requireStudentNameUpdate) {
+    return db.collection('students').doc(data.studentUid).update({
+      displayName: data.displayName,
+    }).then((studentRecord) => {
+      return {
+        message: `sucessfully updated students name for ${studentRecord.uid}`
+      }
+    }).catch((err) => {
+      console.log(err);
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  } else if(data.requireStudentGradeUpdate) {
+    return db.collection('students').doc(data.studentUid).update({
+      currentGradeLevel: data.currentGradeLevel,
+    }).then((studentRecord) => {
+      return {
+        message: `sucessfully updated students grade for ${studentRecord.uid}`
+      }
+    }).catch((err) => {
+      console.log(err);
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  }
+});
 
 exports.addAdminRole = functions.https.onCall((data, context) => {
     return firestore.collection('users')
