@@ -10,6 +10,8 @@ const firestore = new Firestore({
 admin.initializeApp();
 
 const db = admin.firestore();
+const bucket = admin.storage().bucket();
+
 
 // updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
 exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, context) => {
@@ -68,7 +70,47 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
   if (context.auth.uid != data.uid){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
-  
+  const image = data.studentProfilePicFile;
+  const file = bucket.file(`images/${image.name}`);
+  const options = { resumable: false, metadata: { contentType: "image/jpg" } };
+  return file.save(image, options).then(stuff => {
+    return file.getSignedUrl({
+      action: 'read',
+      expires: '03-09-2500'
+    })
+  }).then(urls => {
+    const url = urls[0];
+    console.log(`Image url = ${url}`)
+    return url
+  }).catch(err => {
+    console.log(`Unable to upload image ${err}`)
+    throw new functions.https.HttpsError("internal", "Request caused a server error");
+  });
+  // const uploadTask = bucket.ref(`images/${image.name}`).put(image);
+  // bucket("gs://homeschool-nonprod.appspot.com").upload(`images/${image.name}`,{
+
+  // }
+  // uploadTask.on(
+  //     error => {
+  //         // Error function ...
+  //         console.log(error);
+  //     },
+  //     () => {
+  //         // complete function ...
+  //         storage
+  //         .ref("images")
+  //         .child(image.name)
+  //         .getDownloadURL()
+  //         .then(url => {
+  //             this.setState({
+  //                 teacherProfileFile: url
+  //             });
+  //             // this.setState((prevState) => ({
+  //             //     teacherStudent: [...prevState.teacherDataCollection.photoUrl: url]
+  //             // }));
+  //         });
+  //     }
+  // );
 });
 /* updateStudentAsTeacher => as a teacher be able to update student information */
 // exports.updateStudentAsTeacher = functions.https.onCall((data, context) => {
