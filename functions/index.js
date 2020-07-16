@@ -11,6 +11,88 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+// updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
+exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+
+  if(data.requireStudentEmailUpdate && data.requireStudentPasswordUpdate) {
+    return admin.auth().updateUser(data.studentUid, {
+      email: data.studentEmail,
+      password: data.studentPassword,
+    }).then((userRecord) => {
+      return {
+        message: `sucessfully updated ${userRecord.uid}`,
+        user: userRecord,
+      }
+    }).catch((err) => {
+      console.log(err);
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  } else if(data.requireStudentEmailUpdate) {
+    return admin.auth().updateUser(data.studentUid, {
+      email: data.studentEmail,
+    }).then((userRecord) => {
+      return {
+        message: `sucessfully updated email for ${userRecord.uid}`,
+        user: userRecord,
+      }
+    }).catch((err) => {
+      console.log(err);
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  } else if(data.requireStudentPasswordUpdate) {
+    return admin.auth().updateUser(data.studentUid, {
+      password: data.studentPassword,
+    }).then((userRecord) => {
+      return {
+        message: `sucessfully updated ${userRecord.uid}`,
+        user: userRecord,
+      }
+    }).catch((err) => {
+      console.log(err);
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  }
+});
+
+// updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
+exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  
+});
+/* updateStudentAsTeacher => as a teacher be able to update student information */
+// exports.updateStudentAsTeacher = functions.https.onCall((data, context) => {
+//   if (context.auth.token.admin !== true){
+//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+//   }
+//   if (context.auth.uid != data.uid){
+//     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+//   }
+
+//   // keep a list of everything thats being changed if null don't add it to that list of allChanging
+//   // go through the list updating one at a time
+//   // let allChanging = [];
+//   // let ds = {};
+//   // ds.displayName = "lladsjflj";
+//   // check if the date being send contains new password, email or photoURL
+//   if(data.photoURL) {
+    
+//   }
+//   return db.collection('students').doc(data.studentUid).update({
+//     displayName: data.displayName,
+//   }).then()
+// });
+
 exports.addAdminRole = functions.https.onCall((data, context) => {
     return firestore.collection('users')
     .doc(data.uid)
