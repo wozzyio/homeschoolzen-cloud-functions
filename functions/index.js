@@ -102,6 +102,7 @@ exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context)
       displayName: data.displayName,
       currentGradeLevel: data.currentGradeLevel,
     }).then((result) => {
+      console.log('updating both students name and grade');
       return {
         message: `sucessfully updated students name and grade for ${data.uid}`
       }
@@ -113,6 +114,7 @@ exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context)
     return db.collection('students').doc(data.studentUid).update({
       displayName: data.displayName,
     }).then((result) => {
+      console.log('updating both students name');
       return {
         message: `sucessfully updated students name for ${data.uid}`
       }
@@ -124,6 +126,7 @@ exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context)
     return db.collection('students').doc(data.studentUid).update({
       currentGradeLevel: data.currentGradeLevel,
     }).then((result) => {
+      console.log('updating both students grade');
       return {
         message: `sucessfully updated students grade for ${data.uid}`
       }
