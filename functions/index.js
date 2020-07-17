@@ -10,7 +10,6 @@ const firestore = new Firestore({
 admin.initializeApp();
 
 const db = admin.firestore();
-const storage = admin.storage();
 
 // TODO: udpate the eventual consitency when udating the student by updating the rest of the fields that require the update
 // updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
@@ -70,58 +69,18 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
   if (context.auth.uid != data.uid){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
-  const metadata = {
-    contentType: 'image/jpeg'
-  }
-  const storageRef = storage.ref();
-  const imageName = `${data.studentUid}/testingserver`
-  const imgFile = storageRef.child(`images/${imageName}.png`);
-  try {
-    const uploadTask = imgFile.put(data.file, metadata);
-    uploadTask.on(
-      error => {
-        console.log(`Unable to get URL of image ${error}`)
-      throw new functions.https.HttpsError("internal", "Request caused a server error");
-    },
-    () => {
-      // complete function ...
-      storage
-      .ref("images")
-      .child(imageName)
-      .getDownloadURL()
-      .then(url => {
-        // TODO: set the url after this
-        console.log("Url for this is: " + url);
-          // this.setState({
-          //     teacherProfileFile: url
-          // });
-          // this.setState((prevState) => ({
-          //     teacherStudent: [...prevState.teacherDataCollection.photoUrl: url]
-          // }));
-      });
-    });
-  } catch(err) {
-    console.log(`Unable to upload image ${err}`)
+  
+  return db.collection('students').doc(data.studentUid).update({
+    photoURL: data.photoURL,
+  }).then(() => {
+    console.log('updating students photoURL sucessfully');
+    return {
+      message: `sucessfully updated students photoURL for ${data.uid}`
+    }
+  }).catch((err) => {
+    console.log(err);
     throw new functions.https.HttpsError("internal", "Request caused a server error");
-  }
-  // const image = data.studentProfilePicFile;
-  // const file = bucket.file(`images/${image.name}`);
-  // const imageBuffer = Buffer.from(image, 'base64')
-  // const imageByteArray = new Uint8Array(imageBuffer);
-  // const options = { resumable: false, metadata: { contentType: "image/jpg" } };
-  // return file.save(imageByteArray, options).then(stuff => {
-  //   return file.getSignedUrl({
-  //     action: 'read',
-  //     expires: '03-09-2500'
-  //   })
-  // }).then(urls => {
-  //   const url = urls[0];
-  //   console.log(`Image url = ${url}`)
-  //   return url
-  // }).catch(err => {
-  //   console.log(`Unable to upload image ${err}`)
-  //   throw new functions.https.HttpsError("internal", "Request caused a server error");
-  // });
+  });
 });
 
 /* updateStudentNameGradeAsTeacher => as a teacher be able to update student Name and Grade information */
@@ -315,53 +274,6 @@ exports.getStudentDocumentAsTeacher = functions.https.onCall((data, context) => 
   });
 });
 
-/* onCreation of user with the userType of student */
-exports.createUser = functions.firestore.document('users/{userId}').onCreate((snap, context) => {
-    const newValue = snap.data();
-    if (newValue.userType == "student") {
-      return db.collection('students').doc(newValue.uid).set({ 
-        displayName: newValue.displayName,
-        email: newValue.email,
-        emailVerified: newValue.emailVerified,
-        isNewUser: newValue.isNewUser,
-        photoURL: newValue.photoURL,
-        teacherUid: newValue.teacherUid,
-        uid: newValue.uid,
-        userType: "student"
-      }).then((userRecord) => {
-        console.log(userRecord);
-        return {
-          user: userRecord
-        }
-      }).catch(err => {
-        console.log(err);
-      });
-    }
-});
-
-/* onUpdate of teachers we want to update the user of userType teacher collection as well */
-exports.onUpdateTeacherUser = functions.firestore.document('teachers/{teacherId}').onUpdate((snap, context) => {
-    const newValue = snap.data();
-    return db.collection('users').doc(newValue.uid).set({ 
-        displayName: newValue.displayName,
-        email: newValue.email,
-        emailVerified: newValue.emailVerified,
-        isNewUser: newValue.isNewUser,
-        photoURL: newValue.photoURL,
-        teacherUid: newValue.teacherUid,
-        uid: newValue.uid,
-        userType: "student"
-    })
-    .then((userRecord) => {
-      console.log(userRecord);
-      return {
-        user: userRecord
-      }
-    }).catch(err => {
-      console.log(err);
-    });
-});
-
 exports.notAttendingStudent = functions.https.onCall((data, context) => {
     // need data.reason, data.uid, data.studentUids, data.datesString
     // datesString: => 2020-04-29,2020-04-30
@@ -413,6 +325,52 @@ exports.notAttendingStudent = functions.https.onCall((data, context) => {
     }
 });
 
+/* onCreation of user with the userType of student */
+exports.createUser = functions.firestore.document('users/{userId}').onCreate((snap, context) => {
+  const newValue = snap.data();
+  if (newValue.userType == "student") {
+    return db.collection('students').doc(newValue.uid).set({ 
+      displayName: newValue.displayName,
+      email: newValue.email,
+      emailVerified: newValue.emailVerified,
+      isNewUser: newValue.isNewUser,
+      photoURL: newValue.photoURL,
+      teacherUid: newValue.teacherUid,
+      uid: newValue.uid,
+      userType: "student"
+    }).then((userRecord) => {
+      console.log(userRecord);
+      return {
+        user: userRecord
+      }
+    }).catch(err => {
+      console.log(err);
+    });
+  }
+});
+
+/* onUpdate of teachers we want to update the user of userType teacher collection as well */
+exports.onUpdateTeacherUser = functions.firestore.document('teachers/{teacherId}').onUpdate((snap, context) => {
+  const newValue = snap.data();
+  return db.collection('users').doc(newValue.uid).set({ 
+      displayName: newValue.displayName,
+      email: newValue.email,
+      emailVerified: newValue.emailVerified,
+      isNewUser: newValue.isNewUser,
+      photoURL: newValue.photoURL,
+      teacherUid: newValue.teacherUid,
+      uid: newValue.uid,
+      userType: "student"
+  })
+  .then((userRecord) => {
+    console.log(userRecord);
+    return {
+      user: userRecord
+    }
+  }).catch(err => {
+    console.log(err);
+  });
+});
 /* onCreate of teachers we want to update the teacher user document as well */
 // exports.onCreateTeacherUser = functions.firestore.document('teachers/{teacherId}').onCreate((snap, context) => {
 //     const newValue = snap.data();
