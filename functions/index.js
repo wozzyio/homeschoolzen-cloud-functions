@@ -72,8 +72,10 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
   }
   const image = data.studentProfilePicFile;
   const file = bucket.file(`images/${image.name}`);
+  const imageBuffer = Buffer.from(image, 'base64')
+  const imageByteArray = new Uint8Array(imageBuffer);
   const options = { resumable: false, metadata: { contentType: "image/jpg" } };
-  return file.save(image, options).then(stuff => {
+  return file.save(imageByteArray, options).then(stuff => {
     return file.getSignedUrl({
       action: 'read',
       expires: '03-09-2500'
