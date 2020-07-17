@@ -12,6 +12,30 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // TODO: udpate the eventual consitency when udating the student by updating the rest of the fields that require the update
+// might just have to do this by updating it right away all the fields instead of creating listener cloud functions
+// for example teacher will need an update on user as well, student will need an update on teacher and user
+// TODO: for currentGradeLevel update the gradeLevel under the student as well (if the document exists just update currentGradeLevel
+// otherwise create a new document with the updated gradeLevel being passed in)
+// TODO: add functionality to delete student as well
+
+exports.getStudentCollectionDocumentsAsTeacher = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+
+  return db.collection("teachers").doc(data.uid).collection("teacherStudents").getDocuments().then((studentDocs) => {
+    return {
+      data: studentDocs,
+    }
+  }).catch((err) => {
+    console.log(err);
+    throw new functions.https.HttpsError("internal", "Request caused a server error");
+  });
+});
+
 // updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
 exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
@@ -73,6 +97,36 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
   return db.collection('students').doc(data.studentUid).update({
     photoURL: data.photoURL,
   }).then(() => {
+    db.collection('users').doc(data.uid).get().then(doc => {
+      if (!(doc && doc.exists)) {
+        return { 
+            error: 'Unable to find the document' 
+        }
+      }
+      console.log("Document requested: " + doc.toString());
+      console.log("Document requested .data(): " + doc.data().toString());
+      const docRef = doc.data();
+      const teacherStudentLength = docRef.data.teacherStudents.length;
+      let count = 0;
+      for (let i = 0; i < teacherStudentLength; i++) {
+        if(docRef.data.teacherStudents.uid === data.uid){
+          break;
+        }
+        count++;
+      }
+      return db.collection('users').doc(`${data.uid}/teacherStudents[${count}]`).update({
+        photoURL: data.photoURL,
+      }).then(() => {
+        return {
+          message: 'update users teacherStudents sucessful',
+        }
+      }).catch((err) => {
+        return { 
+          error: `Unable to find the document ${err}`, 
+        }
+      });
+    });
+
     console.log('updating students photoURL sucessfully');
     return {
       message: `sucessfully updated students photoURL for ${data.uid}`
