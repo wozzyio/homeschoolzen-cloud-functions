@@ -26,7 +26,7 @@ exports.getStudentCollectionDocumentsAsTeacher = functions.https.onCall((data, c
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
 
-  return db.doc(`teachers/${data.uid}`).listCollections().then((collections) => {
+  return db.doc(`teachers/${data.uid}/teacherStudents`).listCollections().then((collections) => {
     const collectionIds = collections.map(col => col.id);
     return {
       data: collectionIds,
