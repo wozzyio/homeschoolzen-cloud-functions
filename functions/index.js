@@ -26,19 +26,9 @@ exports.getStudentCollectionDocumentsAsTeacher = functions.https.onCall((data, c
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
 
-  // const collectionIds = collections.map(col => col.id);
   return db.collection('teachers').doc(data.uid).collection('teacherStudents').get().then((querySnapshot) => {
             return querySnapshot.docs.map(doc => doc.data());
   });
-  // doc(`teachers/${data.uid}/teacherStudents`).listCollections().then((collections) => {
-  //   const collectionIds = collections.map(col => col.id);
-  //   return {
-  //     data: collectionIds,
-  //   }
-  // }).catch((err) => {
-  //   console.log(err);
-  //   throw new functions.https.HttpsError("internal", "Request caused a server error");
-  // });
 });
 
 // updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
