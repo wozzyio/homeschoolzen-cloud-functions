@@ -89,8 +89,8 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
   
-  return db.collection('teachers').doc(data.teacherUid).collection('teacherStudents').doc(data.studentUid).update({
-    photoURL: data.profilePicURL,
+  return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid).update({
+    photoURL: data.photoURL,
   }).then((teacherStudent) => {
     teacherStudentDoc = teacherStudent.data();
     return {
