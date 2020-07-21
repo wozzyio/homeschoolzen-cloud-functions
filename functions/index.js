@@ -89,47 +89,60 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
   
-  return db.collection('students').doc(data.studentUid).update({
-    photoURL: data.photoURL,
-  }).then(() => {
-    db.collection('users').doc(data.uid).get().then(doc => {
-      if (!(doc && doc.exists)) {
-        return { 
-            error: 'Unable to find the document' 
-        }
-      }
-      console.log("Document requested: " + doc.toString());
-      console.log("Document requested .data(): " + doc.data().toString());
-      const docRef = doc.data();
-      const teacherStudentLength = docRef.data.teacherStudents.length;
-      let count = 0;
-      for (let i = 0; i < teacherStudentLength; i++) {
-        if(docRef.data.teacherStudents.uid === data.uid){
-          break;
-        }
-        count++;
-      }
-      return db.collection('users').doc(`${data.uid}/teacherStudents[${count}]`).update({
-        photoURL: data.photoURL,
-      }).then(() => {
-        return {
-          message: 'update users teacherStudents sucessful',
-        }
-      }).catch((err) => {
-        return { 
-          error: `Unable to find the document ${err}`, 
-        }
-      });
-    });
-
-    console.log('updating students photoURL sucessfully');
+  return db.collection('teachers').doc(data.teacherUid).collection('teacherStudents').doc(data.studentUid).update({
+    photoURL: data.profilePicURL,
+  }).then((teacherStudent) => {
+    teacherStudentDoc = teacherStudent.data();
     return {
-      message: `sucessfully updated students photoURL for ${data.uid}`
+      message: `Update profilePicURL sucessfully for ${data.studentUid}`,
+      data: teacherStudentDoc,
     }
   }).catch((err) => {
-    console.log(err);
-    throw new functions.https.HttpsError("internal", "Request caused a server error");
+    return {
+      err: `Update unsucessful ${err}`,
+    }
   });
+  // return db.collection('students').doc(data.studentUid).update({
+  //   photoURL: data.photoURL,
+  // }).then(() => {
+  //   db.collection('users').doc(data.uid).get().then(doc => {
+  //     if (!(doc && doc.exists)) {
+  //       return { 
+  //           error: 'Unable to find the document' 
+  //       }
+  //     }
+  //     console.log("Document requested: " + doc.toString());
+  //     console.log("Document requested .data(): " + doc.data().toString());
+  //     const docRef = doc.data();
+  //     const teacherStudentLength = docRef.data.teacherStudents.length;
+  //     let count = 0;
+  //     for (let i = 0; i < teacherStudentLength; i++) {
+  //       if(docRef.data.teacherStudents.uid === data.uid){
+  //         break;
+  //       }
+  //       count++;
+  //     }
+  //     return db.collection('users').doc(`${data.uid}/teacherStudents[${count}]`).update({
+  //       photoURL: data.photoURL,
+  //     }).then(() => {
+  //       return {
+  //         message: 'update users teacherStudents sucessful',
+  //       }
+  //     }).catch((err) => {
+  //       return { 
+  //         error: `Unable to find the document ${err}`, 
+  //       }
+  //     });
+  //   });
+
+  //   console.log('updating students photoURL sucessfully');
+  //   return {
+  //     message: `sucessfully updated students photoURL for ${data.uid}`
+  //   }
+  // }).catch((err) => {
+  //   console.log(err);
+  //   throw new functions.https.HttpsError("internal", "Request caused a server error");
+  // });
 });
 
 /* updateStudentNameGradeAsTeacher => as a teacher be able to update student Name and Grade information */
