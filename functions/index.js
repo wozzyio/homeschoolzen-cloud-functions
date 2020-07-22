@@ -92,10 +92,9 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
   return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid).update({
     photoURL: data.photoURL,
   }).then((teacherStudent) => {
-    teacherStudentDoc = teacherStudent.data();
     return {
       message: `Update profilePicURL sucessfully for ${data.studentUid}`,
-      data: teacherStudentDoc,
+      data: teacherStudent,
     }
   }).catch((err) => {
     return {
