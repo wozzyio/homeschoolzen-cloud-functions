@@ -44,11 +44,18 @@ exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, cont
     return admin.auth().updateUser(data.studentUid, {
       email: data.email,
       password: data.password,
-    }).then((userRecord) => {
-      return {
-        message: `sucessfully updated ${userRecord.uid}`,
-        user: userRecord,
-      }
+    }).then(() => {
+      return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid).update({
+        email: data.email,
+      }).then((teacherStudent) => {
+        return {
+          message: `Update email sucessfully for ${data.studentUid}`,
+          data: teacherStudent,
+        }
+      }).catch((err) => {
+        console.log(err);
+        throw new functions.https.HttpsError("internal", "Request caused a server error");
+      });
     }).catch((err) => {
       console.log(err);
       throw new functions.https.HttpsError("internal", "Request caused a server error");
@@ -56,11 +63,18 @@ exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, cont
   } else if(data.requireStudentEmailUpdate) {
     return admin.auth().updateUser(data.studentUid, {
       email: data.email,
-    }).then((userRecord) => {
-      return {
-        message: `sucessfully updated email for ${userRecord.uid}`,
-        user: userRecord,
-      }
+    }).then(() => {
+      return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid).update({
+        email: data.email,
+      }).then((teacherStudent) => {
+        return {
+          message: `Update profilePicURL sucessfully for ${data.studentUid}`,
+          data: teacherStudent,
+        }
+      }).catch((err) => {
+        console.log(err);
+        throw new functions.https.HttpsError("internal", "Request caused a server error");
+      });
     }).catch((err) => {
       console.log(err);
       throw new functions.https.HttpsError("internal", "Request caused a server error");
@@ -70,7 +84,7 @@ exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, cont
       password: data.password,
     }).then((userRecord) => {
       return {
-        message: `sucessfully updated ${userRecord.uid}`,
+        message: `sucessfully updated password for ${userRecord.uid}`,
         user: userRecord,
       }
     }).catch((err) => {
@@ -80,7 +94,7 @@ exports.updateStudentEmailPasswordAsTeacher = functions.https.onCall((data, cont
   }
 });
 
-// updateStudentEmailPasswordAsTeacher => as a teacher be able to update student email and password
+// updateStudentProfilePicAsTeacher => as a teacher be able to update student profile pic
 exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
@@ -101,47 +115,6 @@ exports.updateStudentProfilePicAsTeacher = functions.https.onCall((data, context
       err: `Update unsucessful ${err}`,
     }
   });
-  // return db.collection('students').doc(data.studentUid).update({
-  //   photoURL: data.photoURL,
-  // }).then(() => {
-  //   db.collection('users').doc(data.uid).get().then(doc => {
-  //     if (!(doc && doc.exists)) {
-  //       return { 
-  //           error: 'Unable to find the document' 
-  //       }
-  //     }
-  //     console.log("Document requested: " + doc.toString());
-  //     console.log("Document requested .data(): " + doc.data().toString());
-  //     const docRef = doc.data();
-  //     const teacherStudentLength = docRef.data.teacherStudents.length;
-  //     let count = 0;
-  //     for (let i = 0; i < teacherStudentLength; i++) {
-  //       if(docRef.data.teacherStudents.uid === data.uid){
-  //         break;
-  //       }
-  //       count++;
-  //     }
-  //     return db.collection('users').doc(`${data.uid}/teacherStudents[${count}]`).update({
-  //       photoURL: data.photoURL,
-  //     }).then(() => {
-  //       return {
-  //         message: 'update users teacherStudents sucessful',
-  //       }
-  //     }).catch((err) => {
-  //       return { 
-  //         error: `Unable to find the document ${err}`, 
-  //       }
-  //     });
-  //   });
-
-  //   console.log('updating students photoURL sucessfully');
-  //   return {
-  //     message: `sucessfully updated students photoURL for ${data.uid}`
-  //   }
-  // }).catch((err) => {
-  //   console.log(err);
-  //   throw new functions.https.HttpsError("internal", "Request caused a server error");
-  // });
 });
 
 /* updateStudentNameGradeAsTeacher => as a teacher be able to update student Name and Grade information */
@@ -307,31 +280,6 @@ exports.addTeacherDocuments = functions.https.onCall((data, context) => {
     return {
         err: err
     }
-  });
-});
-
-exports.getStudentDocumentAsTeacher = functions.https.onCall((data, context) => {
-  if (context.auth.token.admin !== true){
-    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
-  }
-  if (context.auth.uid != data.uid){
-    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
-  }
-  return db.collection('students').doc(data.studentUid).get().then(doc => {
-    if (!(doc && doc.exists)) {
-      return { 
-          error: 'Unable to find the document' 
-      }
-    }
-    console.log("Document requested: " + doc.toString());
-    console.log("Document requested .data(): " + doc.data().toString());
-    const docRef = doc.data();
-    return {
-      data: docRef
-    }
-  }).catch(err => {
-    console.log(err);
-    throw new functions.https.HttpsError("internal", "Request caused a server error");
   });
 });
 
