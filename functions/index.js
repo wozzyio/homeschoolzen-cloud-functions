@@ -127,37 +127,37 @@ exports.updateStudentNameGradeAsTeacher = functions.https.onCall((data, context)
   }
 
   if(data.requireStudentNameUpdate && data.requireStudentGradeUpdate) {
-    return db.collection('students').doc(data.studentUid).update({
+    return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid).update({
       displayName: data.displayName,
       currentGradeLevel: data.currentGradeLevel,
-    }).then((result) => {
-      console.log('updating both students name and grade');
+    }).then((teacherStudent) => {
       return {
-        message: `sucessfully updated students name and grade for ${data.uid}`
+        message: `Update name and gradelevel sucessfully for ${data.studentUid}`,
+        data: teacherStudent,
       }
     }).catch((err) => {
       console.log(err);
       throw new functions.https.HttpsError("internal", "Request caused a server error");
     });
   } else if(data.requireStudentNameUpdate) {
-    return db.collection('students').doc(data.studentUid).update({
+    return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid).update({
       displayName: data.displayName,
-    }).then((result) => {
-      console.log('updating students name');
+    }).then((teacherStudent) => {
       return {
-        message: `sucessfully updated students name for ${data.uid}`
+        message: `Update name sucessfully for ${data.studentUid}`,
+        data: teacherStudent,
       }
     }).catch((err) => {
       console.log(err);
       throw new functions.https.HttpsError("internal", "Request caused a server error");
     });
   } else if(data.requireStudentGradeUpdate) {
-    return db.collection('students').doc(data.studentUid).update({
+    return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid).update({
       currentGradeLevel: data.currentGradeLevel,
-    }).then((result) => {
-      console.log('updating student grade');
+    }).then((teacherStudent) => {
       return {
-        message: `sucessfully updated students grade for ${data.uid}`
+        message: `Update student grade level sucessfully for ${data.studentUid}`,
+        data: teacherStudent,
       }
     }).catch((err) => {
       console.log(err);
