@@ -11,12 +11,7 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-// TODO: udpate the eventual consitency when udating the student by updating the rest of the fields that require the update
-// might just have to do this by updating it right away all the fields instead of creating listener cloud functions
-// for example teacher will need an update on user as well, student will need an update on teacher and user
-// TODO: for currentGradeLevel update the gradeLevel under the student as well (if the document exists just update currentGradeLevel
-// otherwise create a new document with the updated gradeLevel being passed in)
-// TODO: add functionality to delete student as well
+// TODO: create an event handler to update the user doc as well
 
 exports.getStudentCollectionDocumentsAsTeacher = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
