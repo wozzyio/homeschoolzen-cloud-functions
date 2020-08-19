@@ -13,6 +13,40 @@ const db = admin.firestore();
 
 // TODO: create an event handler to update the user doc as well
 
+// TODO: add the student uid
+exports.addStudentAsTeacherWithoutLoginPortal = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  let photoURL = null;
+  if(data.photoURL){
+    photoURL = data.photoURL
+  }
+  return db.collection('teachers').doc(data.uid).collection('teacherStudents').add({
+    teacherUid: data.uid,
+    currentGradeLevel: data.currentGradeLevel,
+    photoURL: photoURL
+  }).then((docRef) => {
+    studentUid = docRef.id;
+    return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(studentUid).update({
+      uid: studentUid,
+    }).then(() => {
+      return {
+        message: `Sucessfully created student ${studentUid}`
+      }
+    }).catch(err => {
+      console.log(err);
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  }).catch(err => {
+    console.log(err);
+    throw new functions.https.HttpsError("internal", "Request caused a server error");
+  });
+});
+
 exports.getStudentCollectionDocumentsAsTeacher = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
