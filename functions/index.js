@@ -28,7 +28,8 @@ exports.addStudentAsTeacherWithoutLoginPortal = functions.https.onCall((data, co
   return db.collection('teachers').doc(data.uid).collection('teacherStudents').add({
     teacherUid: data.uid,
     currentGradeLevel: data.currentGradeLevel,
-    photoURL: photoURL
+    photoURL: photoURL,
+    displayName: data.displayName,
   }).then((docRef) => {
     studentUid = docRef.id;
     return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(studentUid).update({
