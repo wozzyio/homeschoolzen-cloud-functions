@@ -12,8 +12,62 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // TODO: create an event handler to update the user doc as well
+exports.addStudentAsTeacherWithLoginPortal = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  let photoURL = null;
+  if(data.photoURL){
+    photoURL = data.photoURL
+  }
+  let returnRecord = null;
+  let userUid = null;
+  return admin.auth().createUser({
+    teacherUid: data.uid,
+    currentGradeLevel: data.currentGradeLevel,
+    photoURL: photoURL,
+    displayName: data.displayName,
+  }).then(function(userRecord){
+    console.log(userRecord);
+    returnRecord = userRecord;
+    userUid = userRecord.uid;
+    return db.collection('users').doc(userRecord.uid).set({
+      uid: userUid,
+      teacherUid: data.uid,
+      currentGradeLevel: data.currentGradeLevel,
+      photoURL: photoURL,
+      displayName: data.displayName,
+    }).then(function(){
+      return db.collection('teachers').doc(data.uid).collection('teacherStudents').set({
+        teacherUid: data.uid,
+        currentGradeLevel: data.currentGradeLevel,
+        photoURL: photoURL,
+        displayName: data.displayName,
+        uid: userUid,
+      }).then(function(){
+        return {
+          message: `Sucessfully created student with login portal with ${userUid}`
+        }
+      }).catch(function(err){
+        console.log(err);
+        console.log("Couldn't create teacherStudent doc when teacher is creating student with portal");
+        throw new functions.https.HttpsError("internal", "Request caused a server error");
+      });
+    }).catch(function(err){
+      console.log(err);
+      console.log("Couldn't create users doc when teacher is creating student with portal");
+      throw new functions.https.HttpsError("internal", "Request caused a server error");
+    });
+  }).catch(function(err) {
+    console.log(err);
+    console.log("Couldn't create student user portal as teacher");
+    throw new functions.https.HttpsError("internal", "Request caused a server error");
+  });
+});
 
-// TODO: add the student uid
 exports.addStudentAsTeacherWithoutLoginPortal = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
