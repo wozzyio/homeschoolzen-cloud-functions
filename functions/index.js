@@ -43,7 +43,7 @@ exports.addStudentAsTeacherWithLoginPortal = functions.https.onCall((data, conte
       photoURL: photoURL,
       displayName: data.displayName,
     }).then(function(){
-      return db.collection('teachers').doc(data.uid).collection('teacherStudents').set({
+      return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(userUid).set({
         email: data.email,
         teacherUid: data.uid,
         currentGradeLevel: data.currentGradeLevel,
