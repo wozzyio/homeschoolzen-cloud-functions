@@ -26,15 +26,17 @@ exports.addStudentAsTeacherWithLoginPortal = functions.https.onCall((data, conte
   let returnRecord = null;
   let userUid = null;
   return admin.auth().createUser({
-    teacherUid: data.uid,
-    currentGradeLevel: data.currentGradeLevel,
-    photoURL: photoURL,
+    email: data.email,
+    emailVerified: false,
+    password: data.password,
     displayName: data.displayName,
+    disabled: false,
   }).then(function(userRecord){
     console.log(userRecord);
     returnRecord = userRecord;
     userUid = userRecord.uid;
     return db.collection('users').doc(userRecord.uid).set({
+      email: data.email,
       uid: userUid,
       teacherUid: data.uid,
       currentGradeLevel: data.currentGradeLevel,
@@ -42,6 +44,7 @@ exports.addStudentAsTeacherWithLoginPortal = functions.https.onCall((data, conte
       displayName: data.displayName,
     }).then(function(){
       return db.collection('teachers').doc(data.uid).collection('teacherStudents').set({
+        email: data.email,
         teacherUid: data.uid,
         currentGradeLevel: data.currentGradeLevel,
         photoURL: photoURL,
