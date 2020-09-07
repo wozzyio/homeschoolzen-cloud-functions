@@ -11,6 +11,19 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+// getStudentClassesCollectionAsTeacher -> get all studentClasses provided gradeLevel studentUid as a teacher
+exports.getStudentClassesCollectionAsTeacher = functions.https.onCall((data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+
+  return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid)
+         .collection('gradeLevels').doc(data.currentGradeLevel).collection('classes').doc(data.studentUid).listCollections();
+});
+
 // TODO: create an event handler to update the user doc as well
 exports.addStudentAsTeacherWithLoginPortal = functions.https.onCall((data, context) => {
   if (context.auth.token.admin !== true){
