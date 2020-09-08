@@ -20,8 +20,11 @@ exports.getStudentClassesCollectionAsTeacher = functions.https.onCall((data, con
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
   }
 
-  return db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid)
+  const collections = db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid)
          .collection('gradeLevels').doc(data.currentGradeLevel).collection('classes').doc(data.studentUid).listCollections();
+  const collectionIds = collections.map(col => col.id);
+
+  return { classes: collectionIds };
 });
 
 // TODO: create an event handler to update the user doc as well
