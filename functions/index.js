@@ -11,6 +11,24 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+exports.getStudentAssignmentsInParticularClassAsTeacher = functions.https.onCall(async (data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  const classesRef = db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid)
+                    .collection('gradeLevels').doc(data.currentGradeLevel).collection('classes').doc(data.studentUid)
+                    .collection(data.studentClass);
+  const snapshot = await classesRef.get();
+  // TODO: push this in an object of key,value pairs where where the key is the assignment doc and the data is the assignment details
+  // and return that data
+  snapshot.forEach(doc => {
+    console.log(doc.id, '=>', doc.data());
+  });
+});
+
 // getStudentClassesCollectionAsTeacher -> get all studentClasses provided gradeLevel studentUid as a teacher
 exports.getStudentClassesCollectionAsTeacher = functions.https.onCall(async (data, context) => {
   if (context.auth.token.admin !== true){
