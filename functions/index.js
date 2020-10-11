@@ -24,9 +24,12 @@ exports.getStudentAssignmentsInParticularClassAsTeacher = functions.https.onCall
   const snapshot = await classesRef.get();
   // TODO: push this in an object of key,value pairs where where the key is the assignment doc and the data is the assignment details
   // and return that data
-  snapshot.forEach(doc => {
-    console.log(doc.id, '=>', doc.data());
-  });
+  docData = {}
+  snapshot.map(doc => docData[doc.id] = doc.data());
+  return { assignments: docData };
+  // snapshot.forEach(doc => {
+  //   console.log(doc.id, '=>', doc.data());
+  // });
 });
 
 // getStudentClassesCollectionAsTeacher -> get all studentClasses provided gradeLevel studentUid as a teacher
