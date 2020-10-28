@@ -24,9 +24,11 @@ exports.getStudentAssignmentsInParticularClassAsTeacher = functions.https.onCall
   const snapshot = await classesRef.get();
   // TODO: push this in an object of key,value pairs where where the key is the assignment doc and the data is the assignment details
   // and return that data
-  docData = {}
-  snapshot.docs.map(doc => docData[doc.id] = doc.data());
-  return { assignments: docData };
+  // docData = {}
+  // snapshot.docs.map(doc => docData[doc.id] = doc.data());
+  // return { assignments: docData };
+  const assignmentIDs = snapshot.docs.map(doc => doc.id);
+  return { assignments: assignmentIDs };
   // snapshot.forEach(doc => {
   //   console.log(doc.id, '=>', doc.data());
   // });
