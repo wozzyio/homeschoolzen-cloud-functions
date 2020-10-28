@@ -20,7 +20,7 @@ exports.getStudentAssignmentsInParticularClassAsTeacher = functions.https.onCall
   }
   const classesRef = db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid)
                     .collection('gradeLevels').doc(data.currentGradeLevel).collection('classes').doc(data.studentUid)
-                    .collection(data.studentClass);
+                    .collection(data.studentClass).doc(data.studentUid).collection('assignments');
   const snapshot = await classesRef.get();
   // TODO: push this in an object of key,value pairs where where the key is the assignment doc and the data is the assignment details
   // and return that data
