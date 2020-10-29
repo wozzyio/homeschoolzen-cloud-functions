@@ -27,8 +27,19 @@ exports.getStudentAssignmentsInParticularClassAsTeacher = functions.https.onCall
   // docData = {}
   // snapshot.docs.map(doc => docData[doc.id] = doc.data());
   // return { assignments: docData };
-  const assignmentIDs = snapshot.docs.map(doc => doc.id);
-  return { assignments: assignmentIDs };
+  assignments = [];
+  const assignmentIDs = snapshot.docs.map(doc => assignments.push({
+    id: doc.uid,
+    assignemntDueDate: doc.assignemntDueDate,
+    assignmentDescription: doc.assignmentDescription,
+    assignmentGrade: doc.assignmentGrade,
+    assignmentGradeLetter: doc.assignmentGradeLetter,
+    assignmentTurnInRequired: doc.assignmentTurnInRequired,
+    assignmentType: doc.assignmentType,
+    assignmentURL: doc.assignmentURL,
+    isGraded: doc.isGraded
+  }));
+  return { assignments: assignments };
   // snapshot.forEach(doc => {
   //   console.log(doc.id, '=>', doc.data());
   // });
