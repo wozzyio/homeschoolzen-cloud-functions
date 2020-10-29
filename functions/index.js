@@ -28,17 +28,19 @@ exports.getStudentAssignmentsInParticularClassAsTeacher = functions.https.onCall
   // snapshot.docs.map(doc => docData[doc.id] = doc.data());
   // return { assignments: docData };
   assignments = [];
-  const assignmentIDs = snapshot.docs.map(doc => assignments.push({
-    id: doc.uid,
-    assignemntDueDate: doc.assignemntDueDate,
-    assignmentDescription: doc.assignmentDescription,
-    assignmentGrade: doc.assignmentGrade,
-    assignmentGradeLetter: doc.assignmentGradeLetter,
-    assignmentTurnInRequired: doc.assignmentTurnInRequired,
-    assignmentType: doc.assignmentType,
-    assignmentURL: doc.assignmentURL,
-    isGraded: doc.isGraded
-  }));
+  snapshot.docs.map(doc =>{
+    const {uid, assignemntDueDate, assignmentDescription, assignmentGrade, assignmentGradeLetter, assignmentTurnInRequired, assignmentType, assignmentURL, isGraded} = doc.data();
+    assignments.push({
+      uid,
+      assignemntDueDate,
+      assignmentDescription,
+      assignmentGrade,
+      assignmentGradeLetter,
+      assignmentTurnInRequired,
+      assignmentType,
+      assignmentURL,
+      isGraded
+  })});
   return { assignments: assignments };
   // snapshot.forEach(doc => {
   //   console.log(doc.id, '=>', doc.data());
