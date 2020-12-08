@@ -11,6 +11,26 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
+exports.setGradeBookSettingsAsTeacher = functions.https.onCall(async (data, context) => {
+  if (context.auth.token.admin !== true){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  if (context.auth.uid != data.uid){
+    throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
+  }
+  let gradeBookSettingsRef = db.collection('teachers').doc(data.uid).collection('teacherStudents').doc(data.studentUid)
+                            .collection('gradeLevels').doc(data.currentGradeLevel).collection('classes').doc(data.studentUid);
+  
+  return gradeBookSettingsRef.update({
+            gradeBookSettings: data.gradeType,
+         }).then(() => {
+            return { gradeBookSettings: 'success'}
+         }).catch(err => {
+            console.log(err);
+            throw new functions.https.HttpsError("internal", "Request caused a server error");
+         });
+});
+
 exports.getStudentAssignmentsInParticularClassAsTeacher = functions.https.onCall(async (data, context) => {
   if (context.auth.token.admin !== true){
     throw new functions.https.HttpsError("permission-denied", "Resource not allowed");
